@@ -1,0 +1,49 @@
+# redis-eventlistener-service-deployment-1.0.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-eventlistener-service-1-0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-eventlistener-service
+      version: "1.0"
+  template:
+    metadata:
+      labels:
+        app: redis-eventlistener-service
+        version: "1.0"
+    spec:
+      containers:
+      - name: redis-eventlistener-service
+        image: trniel/rediseventlistener:0.0.1
+        imagePullPolicy: Always
+        env:
+          - name: RedisConnection
+            valueFrom:
+              secretKeyRef:
+                name: redis-eventlistener-secrets
+                key: RedisConnection
+          - name: DOTNET_ENVIRONMENT
+            value: 'Production'
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+# redis-eventlistener-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-eventlistener-service
+  labels: 
+    app: redis-eventlistener-service
+spec:
+  selector:
+    app: redis-eventlistener-service
+  ports:
+    - port: 80
